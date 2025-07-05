@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz & Joke App</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #111;
+      color: #e2ffe7;
+      line-height: 1.6;
+    }
+
+    header {
+      background-color: #1b1b1b;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      color: #8cffc1;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      gap: 3rem;
+    }
+
+    section {
+      background-color: #1f1f1f;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 700px;
+      box-shadow: 0 0 15px rgba(0, 255, 170, 0.2);
+    }
+
+    h2 {
+      color: #8cffc1;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    button {
+      background-color: #8cffc1;
+      color: #111;
+      padding: 0.6rem 1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin-top: 0.5rem;
+    }
+
+    button:hover {
+      background-color: #5fe2a3;
+    }
+
+    .question {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .answers button {
+      text-align: left;
+      padding: 0.6rem 1rem;
+      width: 100%;
+    }
+
+    .result {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    #joke {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    @media (min-width: 768px) {
+      main {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      section {
+        flex: 1 1 45%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Quiz & Joke Interactive App</h1>
+  </header>
+
+  <main>
+    <!-- Quiz Section -->
+    <section class="quiz-section">
+      <h2>Web Development Quiz</h2>
+      <div id="quiz"></div>
+      <div id="quiz-result" class="result"></div>
+    </section>
+
+    <!-- Joke Section -->
+    <section class="joke-section">
+      <h2>Get a Random Joke</h2>
+      <p id="joke">Click the button to fetch a joke!</p>
+      <div style="text-align:center;">
+        <button onclick="fetchJoke()">Get Joke</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Fixed Quiz Questions
+    const quizData = [
+      {
+        question: "What is the correct syntax to link an external CSS file?",
+        answers: [
+          "&lt;link src='style.css'&gt;",
+          "&lt;style href='style.css'&gt;",
+          "&lt;link rel='stylesheet' href='style.css'&gt;",
+          "&lt;css link='style.css'&gt;"
+        ],
+        correct: 2
+      },
+      {
+        question: "Which of these is a JavaScript data type?",
+        answers: ["float", "array", "method", "property"],
+        correct: 1
+      },
+      {
+        question: "What does the console.log() function do?",
+        answers: [
+          "Displays output in a browser alert",
+          "Logs errors to a server",
+          "Writes a message to the browser console",
+          "Saves data to local storage"
+        ],
+        correct: 2
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+
+    const quizContainer = document.getElementById("quiz");
+    const resultContainer = document.getElementById("quiz-result");
+
+    function loadQuestion() {
+      const q = quizData[currentQuestion];
+      let html = `<div class="question"><strong>Q${currentQuestion + 1}:</strong> ${q.question}</div><div class="answers">`;
+
+      q.answers.forEach((answer, index) => {
+        html += `<button onclick="checkAnswer(${index})">${answer}</button>`;
+      });
+
+      html += `</div>`;
+      quizContainer.innerHTML = html;
+    }
+
+    function checkAnswer(selected) {
+      if (selected === quizData[currentQuestion].correct) {
+        score++;
+      }
+
+      currentQuestion++;
+
+      if (currentQuestion < quizData.length) {
+        loadQuestion();
+      } else {
+        quizContainer.innerHTML = "";
+        resultContainer.innerHTML = `🎉 You scored ${score} out of ${quizData.length}`;
+      }
+    }
+
+    loadQuestion();
+
+    // Joke API
+    async function fetchJoke() {
+      const jokeEl = document.getElementById("joke");
+      jokeEl.textContent = "Loading...";
+      let temp;
+      try {
+        const response = await fetch("https://icanhazdadjoke.com/", {
+          headers: { Accept: "application/json" }
+        });
+        const data = await response.json();
+        jokeEl.textContent = data.joke;
+      } catch (error) {
+        jokeEl.textContent = "Couldn't fetch a joke. Try again!";
+      }
+    }
+  </script>
+</body>
+</html>
