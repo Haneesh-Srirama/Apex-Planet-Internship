@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Listing Page</title>
+  <style>
+    :root {
+      --bg-color: #f2f2f2;
+      --text-color: #333;
+      --card-bg: #fff;
+      --border-color: #ddd;
+      --shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark {
+      --bg-color: #121212;
+      --text-color: #eee;
+      --card-bg: #1e1e1e;
+      --border-color: #333;
+      --shadow: rgba(255, 255, 255, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    h2, h3 {
+      margin-bottom: 10px;
+    }
+
+    .container {
+      display: flex;
+      padding: 30px;
+      max-width: 1200px;
+      margin: auto;
+      gap: 20px;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px var(--shadow);
+      border: 1px solid var(--border-color);
+    }
+
+    .sidebar label {
+      display: block;
+      margin: 15px 0 5px;
+      font-weight: 600;
+    }
+
+    .sidebar select,
+    .sidebar input[type="number"] {
+      width: 100%;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: var(--bg-color);
+      color: var(--text-color);
+      transition: border-color 0.2s ease;
+    }
+
+    .sidebar select:focus,
+    .sidebar input[type="number"]:focus {
+      border-color: #007BFF;
+      outline: none;
+    }
+
+    .main {
+      flex: 1;
+    }
+
+    #productList {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .product {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px var(--shadow);
+      border: 1px solid var(--border-color);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .product:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px var(--shadow);
+    }
+
+    .product h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .product p {
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: var(--text-color);
+    }
+
+    #productList p {
+      font-style: italic;
+      color: #999;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 16px;
+      background: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      z-index: 999;
+      transition: background 0.3s;
+    }
+
+    .theme-toggle:hover {
+      background: #0056b3;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+
+  <div class="container">
+    <!-- Sidebar Filters -->
+    <div class="sidebar">
+      <h2>Filters</h2>
+      <label for="categoryFilter">Category:</label>
+      <select id="categoryFilter">
+        <option value="all">All</option>
+        <option value="electronics">Electronics</option>
+        <option value="clothing">Clothing</option>
+        <option value="books">Books</option>
+      </select>
+
+      <label for="minPrice">Min Price:</label>
+      <input type="number" id="minPrice" placeholder="0">
+
+      <label for="maxPrice">Max Price:</label>
+      <input type="number" id="maxPrice" placeholder="1000">
+
+      <label for="sortOption">Sort By:</label>
+      <select id="sortOption">
+        <option value="default">Default</option>
+        <option value="rating">Rating (High to Low)</option>
+        <option value="price">Price (Low to High)</option>
+      </select>
+    </div>
+
+    <!-- Product Listing -->
+    <div class="main">
+      <h2>Products</h2>
+      <div id="productList"></div>
+    </div>
+  </div>
+
+  <script>
+    const products = [
+      { name: 'Smartphone', category: 'electronics', price: 499, rating: 4.5 },
+      { name: 'Laptop', category: 'electronics', price: 999, rating: 4.7 },
+      { name: 'T-shirt', category: 'clothing', price: 25, rating: 4.1 },
+      { name: 'Jeans', category: 'clothing', price: 45, rating: 4.3 },
+      { name: 'Novel Book', category: 'books', price: 15, rating: 4.8 },
+      { name: 'Tablet', category: 'electronics', price: 299, rating: 4.2 },
+      { name: 'Hoodie', category: 'clothing', price: 60, rating: 4.0 },
+      { name: 'Science Book', category: 'books', price: 35, rating: 4.6 }
+    ];
+
+    const categoryFilter = document.getElementById('categoryFilter');
+    const minPrice = document.getElementById('minPrice');
+    const maxPrice = document.getElementById('maxPrice');
+    const sortOption = document.getElementById('sortOption');
+    const productList = document.getElementById('productList');
+
+    function renderProducts(filteredProducts) {
+      productList.innerHTML = '';
+      if (filteredProducts.length === 0) {
+        productList.innerHTML = '<p>No products found.</p>';
+        return;
+      }
+      filteredProducts.forEach(product => {
+        productList.innerHTML += `
+          <div class="product">
+            <h3>${product.name}</h3>
+            <p>Category: ${product.category}</p>
+            <p>Price: $${product.price}</p>
+            <p>Rating: ${product.rating}</p>
+          </div>
+        `;
+      });
+    }
+
+    function filterAndSort() {
+      let filtered = [...products];
+
+      const selectedCategory = categoryFilter.value;
+      const min = parseFloat(minPrice.value) || 0;
+      const max = parseFloat(maxPrice.value) || Infinity;
+      const sort = sortOption.value;
+
+      if (selectedCategory !== 'all') {
+        filtered = filtered.filter(p => p.category === selectedCategory);
+      }
+
+      filtered = filtered.filter(p => p.price >= min && p.price <= max);
+
+      if (sort === 'rating') {
+        filtered.sort((a, b) => b.rating - a.rating);
+      } else if (sort === 'price') {
+        filtered.sort((a, b) => a.price - b.price);
+      }
+
+      renderProducts(filtered);
+    }
+
+    categoryFilter.addEventListener('change', filterAndSort);
+    minPrice.addEventListener('input', filterAndSort);
+    maxPrice.addEventListener('input', filterAndSort);
+    sortOption.addEventListener('change', filterAndSort);
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+    }
+
+    // Initial render
+    renderProducts(products);
+  </script>
+</body>
+</html>
